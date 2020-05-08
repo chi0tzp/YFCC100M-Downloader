@@ -1,34 +1,59 @@
+import sys
 import os
 import os.path as osp
 import urllib.request
 from xml.dom.minidom import parse
+from multiprocessing import Pool
+from tqdm import tqdm
 
 root_url = "https://multimedia-commons.s3-us-west-2.amazonaws.com/?delimiter=/&prefix="
 
 
-def download(prefix, path):
-    url = root_url + prefix
-    print("Download {}".format(url))
-    urllib.request.urlretrieve(url, path)
-    return path
-
-
-def collect(prefix):
-    if not osp.isdir(prefix):
-        os.makedirs(prefix)
-
-    # Get index xml file
-    index = prefix + "index.xml"
+def get_index(d):
+    os.makedirs(d, exist_ok=True)
+    index = osp.join(d, "index.xml")
     if not osp.isfile(index):
-        download(prefix, index)
-
-    # Parse index xml file
-    children = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
-                in parse(open(index)).getElementsByTagName("CommonPrefixes")]
-    for child_prefix in children:
-        collect(child_prefix)
+        urllib.request.urlretrieve(root_url + d, index)
 
 
 if __name__ == '__main__':
-    print("Download index files of YFCC100M")
-    collect("data/")
+    # Create data/ directory and download root index xml file
+    print("#.Create data/ directory and download the root index xml file...")
+    os.makedirs("data/", exist_ok=True)
+    urllib.request.urlretrieve(root_url + "data/index.xml", "data/index.xml")
+
+    # Create images subdir under data/ and download the corresponding index.xml file
+    print("#.Create data/images/ directory and download images index file...")
+    os.makedirs("data/images/", exist_ok=True)
+    if not osp.isfile("data/images/index.xml"):
+        urllib.request.urlretrieve(root_url + "data/images/", "data/images/index.xml")
+    print("  \\__Get image directories list...", end="")
+    image_directories = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+                         in parse(open("data/images/index.xml")).getElementsByTagName("CommonPrefixes")]
+    print("{} image directories".format(len(image_directories)))
+
+    # Create videos subdir under data/ and download the corresponding index.xml file
+    print("#.Create data/videos/ directory and download videos index file...")
+    os.makedirs("data/videos/", exist_ok=True)
+    print("  \\__Get video directories list...", end="")
+    if not osp.isfile("data/videos/index.xml"):
+        urllib.request.urlretrieve(root_url + "data/videos/", "data/videos/index.xml")
+    video_directories = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+                         in parse(open("data/videos/index.xml")).getElementsByTagName("CommonPrefixes")]
+    print("{} video directories".format(len(video_directories)))
+
+    print("#.Download image directories...")
+    # for i in range(len(image_directories)):
+    for i in tqdm(range(len(image_directories))):
+        cur_img_dir = image_directories[i]
+        # Create current image directory and get subdir list
+        os.makedirs(image_directories[i], exist_ok=True)
+        cur_img_dir_index = osp.join(cur_img_dir, 'index.xml')
+        if not osp.isfile(cur_img_dir_index):
+            urllib.request.urlretrieve(root_url + cur_img_dir, cur_img_dir_index)
+        cur_img_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+                               in parse(open(cur_img_dir_index)).getElementsByTagName("CommonPrefixes")]
+        # Download subdirs of current directory
+        pool = Pool()
+        pool.map(get_index, cur_img_dir_subdirs)
+        pool.close()
