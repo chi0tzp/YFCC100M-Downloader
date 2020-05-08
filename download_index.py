@@ -53,7 +53,9 @@ if __name__ == '__main__':
             urllib.request.urlretrieve(root_url + cur_img_dir, cur_img_dir_index)
         cur_img_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
                                in parse(open(cur_img_dir_index)).getElementsByTagName("CommonPrefixes")]
-        # Download subdirs of current directory
+        # Download subdirs of current directory using multi-threading
+        # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
+        # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
         pool = Pool()
         pool.map(get_index, cur_img_dir_subdirs)
         pool.close()
