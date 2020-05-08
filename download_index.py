@@ -7,13 +7,19 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 root_url = "https://multimedia-commons.s3-us-west-2.amazonaws.com/?delimiter=/&prefix="
+images_error_file = 'image_errors.log'
+videos_error_file = 'video_errors.log'
 
 
 def get_index(d):
     os.makedirs(d, exist_ok=True)
     index = osp.join(d, "index.xml")
     if not osp.isfile(index):
-        urllib.request.urlretrieve(root_url + d, index)
+        try:
+            urllib.request.urlretrieve(root_url + d, index)
+        except:
+            with open(images_error_file, "a") as f:
+                f.write("{}\n".format(root_url + d))
 
 
 if __name__ == '__main__':
@@ -27,6 +33,7 @@ if __name__ == '__main__':
     os.makedirs("data/images/", exist_ok=True)
     if not osp.isfile("data/images/index.xml"):
         urllib.request.urlretrieve(root_url + "data/images/", "data/images/index.xml")
+
     print("  \\__Get image directories list...", end="")
     image_directories = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
                          in parse(open("data/images/index.xml")).getElementsByTagName("CommonPrefixes")]
@@ -43,7 +50,8 @@ if __name__ == '__main__':
     print("{} video directories".format(len(video_directories)))
 
     print("#.Download image directories...")
-    # for i in range(len(image_directories)):
+    if osp.exists(images_error_file):
+        os.remove(images_error_file)
     for i in tqdm(range(len(image_directories))):
         cur_img_dir = image_directories[i]
         # Create current image directory and get subdir list
