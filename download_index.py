@@ -7,19 +7,23 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 root_url = "https://multimedia-commons.s3-us-west-2.amazonaws.com/?delimiter=/&prefix="
-images_error_file = 'image_errors.log'
-videos_error_file = 'video_errors.log'
+img_error_file = 'image_errors.log'
+img_errors = 0
+vid_error_file = 'video_errors.log'
+# vid_errors
 
 
-def get_index(d):
+def get_img_index(d):
+    global img_errors
     os.makedirs(d, exist_ok=True)
     index = osp.join(d, "index.xml")
     if not osp.isfile(index):
         try:
             urllib.request.urlretrieve(root_url + d, index)
         except:
-            with open(images_error_file, "a") as f:
+            with open(img_error_file, "a") as f:
                 f.write("{}\n".format(root_url + d))
+                img_errors += 1
 
 
 if __name__ == '__main__':
@@ -50,8 +54,8 @@ if __name__ == '__main__':
     print("{} video directories".format(len(video_directories)))
 
     print("#.Download image directories...")
-    if osp.exists(images_error_file):
-        os.remove(images_error_file)
+    if osp.exists(img_error_file):
+        os.remove(img_error_file)
     for i in tqdm(range(len(image_directories))):
         cur_img_dir = image_directories[i]
         # Create current image directory and get subdir list
@@ -65,5 +69,7 @@ if __name__ == '__main__':
         # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
         # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
         pool = Pool()
-        pool.map(get_index, cur_img_dir_subdirs)
+        pool.map(get_img_index, cur_img_dir_subdirs)
         pool.close()
+
+    print("  \\__Done! Errors for {} image index files".format(img_errors))
