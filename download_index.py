@@ -81,24 +81,113 @@ if __name__ == '__main__':
             urllib.request.urlretrieve(root_url + "data/videos/", "data/videos/index.xml")
         video_dir_categories = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
                                 in parse(open("data/videos/index.xml")).getElementsByTagName("CommonPrefixes")]
-        print(video_dir_categories)
-        # video_dir_categories[0] = 'data/videos/keyframes/'
-        # video_dir_categories[1] = 'data/videos/metadata/'
-        # video_dir_categories[2] = 'data/videos/mp4/'
 
-        # if osp.exists(error_file):
-        #     os.remove(error_file)
-        # for item in video_dir_categories:
-        #     print("      \\__{}".format(item))
-        #     os.makedirs(item, exist_ok=True)
-        #     if not osp.isfile(osp.join(item, "index.xml")):
-        #         urllib.request.urlretrieve(root_url + item, osp.join(item, "index.xml"))
-        #     video_category_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data
-        #                               for common_prefix
-        #                               in parse(open(osp.join(item, "index.xml"))).getElementsByTagName("CommonPrefixes")]
-        #     # Download subdirs of current video category using multi-threading
+        print("  \\__.Get video categories...")
+
+        # =============================================================
+        # Get data/videos/keyframes/
+        print("       \\__.Get {}...".format(video_dir_categories[0]))
+        keyframes_dir = video_dir_categories[0]
+        # Create keyframes directory and get subdir list
+        os.makedirs(keyframes_dir, exist_ok=True)
+        keyframes_dir_index = osp.join(keyframes_dir, 'index.xml')
+        if not osp.isfile(keyframes_dir_index):
+            urllib.request.urlretrieve(root_url + keyframes_dir, keyframes_dir_index)
+        keyframes_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+                                 in parse(open(keyframes_dir_index)).getElementsByTagName("CommonPrefixes")]
+        # Download subdirs of keyframes directory using multi-threading
+        # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
+        # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
+        pool = Pool()
+        pool.map(get_index, keyframes_dir_subdirs)
+        pool.close()
+
+        # Download keyframes subdirs
+        for i in tqdm(range(len(keyframes_dir_subdirs))):
+            cur_dir = keyframes_dir_subdirs[i]
+            # Create current directory and get subdir list
+            os.makedirs(cur_dir, exist_ok=True)
+            cur_dir_index = osp.join(cur_dir, 'index.xml')
+            if not osp.isfile(cur_dir_index):
+                urllib.request.urlretrieve(root_url + cur_dir, cur_dir_index)
+            cur_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+                               in parse(open(cur_dir_index)).getElementsByTagName("CommonPrefixes")]
+            # Download subdirs of current directory using multi-threading
+            # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
+            # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
+            pool = Pool()
+            pool.map(get_index, cur_dir_subdirs)
+            pool.close()
+
+        # =============================================================
+        # Get data/videos/metadata/
+        print("       \\__.Get {}...".format(video_dir_categories[1]))
+        metadata_dir = video_dir_categories[1]
+        # Create metadata directory and get subdir list
+        os.makedirs(metadata_dir, exist_ok=True)
+        metadata_dir_index = osp.join(metadata_dir, 'index.xml')
+        if not osp.isfile(metadata_dir_index):
+            urllib.request.urlretrieve(root_url + metadata_dir, metadata_dir_index)
+        # metadata_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+        #                         in parse(open(metadata_dir_index)).getElementsByTagName("CommonPrefixes")]
+        # print("metadata_dir_subdirs: {}".format(metadata_dir_subdirs))
+        #
+        # # Download subdirs of metadata directory using multi-threading
+        # # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
+        # # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
+        # pool = Pool()
+        # pool.map(get_index, metadata_dir_subdirs)
+        # pool.close()
+        #
+        # # Download metadata subdirs
+        # for i in tqdm(range(len(metadata_dir_subdirs))):
+        #     cur_dir = metadata_dir_subdirs[i]
+        #     # Create current directory and get subdir list
+        #     os.makedirs(cur_dir, exist_ok=True)
+        #     cur_dir_index = osp.join(cur_dir, 'index.xml')
+        #     if not osp.isfile(cur_dir_index):
+        #         urllib.request.urlretrieve(root_url + cur_dir, cur_dir_index)
+        #     cur_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+        #                        in parse(open(cur_dir_index)).getElementsByTagName("CommonPrefixes")]
+        #     # Download subdirs of current directory using multi-threading
         #     # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
         #     # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
         #     pool = Pool()
-        #     pool.map(get_index, video_category_subdirs)
+        #     pool.map(get_index, cur_dir_subdirs)
         #     pool.close()
+        #     break
+
+        # =============================================================
+        # Get data/videos/mp4/
+        print("       \\__.Get {}...".format(video_dir_categories[2]))
+        mp4_dir = video_dir_categories[2]
+        # Create mp4 directory and get subdir list
+        os.makedirs(mp4_dir, exist_ok=True)
+        mp4_dir_index = osp.join(mp4_dir, 'index.xml')
+        if not osp.isfile(mp4_dir_index):
+            urllib.request.urlretrieve(root_url + mp4_dir, mp4_dir_index)
+        mp4_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+                           in parse(open(mp4_dir_index)).getElementsByTagName("CommonPrefixes")]
+        # Download subdirs of mp4 directory using multi-threading
+        # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
+        # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
+        pool = Pool()
+        pool.map(get_index, mp4_dir_subdirs)
+        pool.close()
+
+        # Download mp4 subdirs
+        for i in tqdm(range(len(mp4_dir_subdirs))):
+            cur_dir = mp4_dir_subdirs[i]
+            # Create current directory and get subdir list
+            os.makedirs(cur_dir, exist_ok=True)
+            cur_dir_index = osp.join(cur_dir, 'index.xml')
+            if not osp.isfile(cur_dir_index):
+                urllib.request.urlretrieve(root_url + cur_dir, cur_dir_index)
+            cur_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
+                               in parse(open(cur_dir_index)).getElementsByTagName("CommonPrefixes")]
+            # Download subdirs of current directory using multi-threading
+            # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
+            # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
+            pool = Pool()
+            pool.map(get_index, cur_dir_subdirs)
+            pool.close()
