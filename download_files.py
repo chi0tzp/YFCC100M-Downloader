@@ -49,7 +49,9 @@ if __name__ == '__main__':
     # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
     # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
     pool = Pool()
-    pool.map(get_file, paths)
+    # pool.map(get_file, paths)
+    for _ in tqdm(pool.imap_unordered(get_file, paths), total=len(paths)):
+        pass
     pool.close()
     print("  \\__Done! Errors for {} files.".format(errors))
     if errors > 0:
