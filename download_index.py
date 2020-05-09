@@ -81,9 +81,6 @@ if __name__ == '__main__':
             urllib.request.urlretrieve(root_url + "data/videos/", "data/videos/index.xml")
         video_dir_categories = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
                                 in parse(open("data/videos/index.xml")).getElementsByTagName("CommonPrefixes")]
-
-        print("  \\__.Get video categories...")
-
         # =============================================================
         # Get data/videos/keyframes/
         print("       \\__.Get {}...".format(video_dir_categories[0]))
