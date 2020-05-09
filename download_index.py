@@ -1,4 +1,5 @@
 import sys
+import sys
 import os
 import os.path as osp
 import argparse
@@ -8,7 +9,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 root_url = "https://multimedia-commons.s3-us-west-2.amazonaws.com/?delimiter=/&prefix="
-error_file = 'errors.log'
+error_file = 'index_errors.log'
 errors = 0
 
 
