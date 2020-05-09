@@ -67,7 +67,9 @@ if __name__ == '__main__':
             pool = Pool()
             pool.map(get_index, cur_img_dir_subdirs)
             pool.close()
-        print("  \\__Done! Errors for {} image index files -- Run the script again until no errors found.".format(errors))
+        print("  \\__Done! Errors for {} image index files.".format(errors))
+        if errors > 0:
+            print("      Run the script again until no errors found.")
 
     # === TODO: Download index files for videos subset
     if args.subset in ('videos', 'both'):
