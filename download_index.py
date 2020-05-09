@@ -67,9 +67,9 @@ if __name__ == '__main__':
             pool = Pool()
             pool.map(get_index, cur_img_dir_subdirs)
             pool.close()
-        print("  \\__Done! Errors for {} image index files".format(img_errors))
+        print("  \\__Done! Errors for {} image index files -- Run the script again until no errors found.".format(errors))
 
-    # === Download index files for videos subset
+    # === TODO: Download index files for videos subset
     if args.subset in ('videos', 'both'):
         # Create videos subdir under data/ and download the corresponding index.xml file
         print("#.Create data/videos/ directory and download videos index file...")
@@ -79,19 +79,24 @@ if __name__ == '__main__':
             urllib.request.urlretrieve(root_url + "data/videos/", "data/videos/index.xml")
         video_dir_categories = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
                                 in parse(open("data/videos/index.xml")).getElementsByTagName("CommonPrefixes")]
-        if osp.exists(error_file):
-            os.remove(error_file)
-        for item in video_dir_categories:
-            print("      \\__{}".format(item))
-            os.makedirs(item, exist_ok=True)
-            if not osp.isfile(osp.join(item, "index.xml")):
-                urllib.request.urlretrieve(root_url + item, osp.join(item, "index.xml"))
-            video_category_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data
-                                      for common_prefix
-                                      in parse(open(osp.join(item, "index.xml"))).getElementsByTagName("CommonPrefixes")]
-            # Download subdirs of current video category using multi-threading
-            # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
-            # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
-            pool = Pool()
-            pool.map(get_index, video_category_subdirs)
-            pool.close()
+        print(video_dir_categories)
+        # video_dir_categories[0] = 'data/videos/keyframes/'
+        # video_dir_categories[1] = 'data/videos/metadata/'
+        # video_dir_categories[2] = 'data/videos/mp4/'
+
+        # if osp.exists(error_file):
+        #     os.remove(error_file)
+        # for item in video_dir_categories:
+        #     print("      \\__{}".format(item))
+        #     os.makedirs(item, exist_ok=True)
+        #     if not osp.isfile(osp.join(item, "index.xml")):
+        #         urllib.request.urlretrieve(root_url + item, osp.join(item, "index.xml"))
+        #     video_category_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data
+        #                               for common_prefix
+        #                               in parse(open(osp.join(item, "index.xml"))).getElementsByTagName("CommonPrefixes")]
+        #     # Download subdirs of current video category using multi-threading
+        #     # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
+        #     # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
+        #     pool = Pool()
+        #     pool.map(get_index, video_category_subdirs)
+        #     pool.close()
