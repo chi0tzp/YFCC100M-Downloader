@@ -25,9 +25,10 @@ def get_file(p):
 
 if __name__ == '__main__':
     # Set up a parser for command line arguments
-    parser = argparse.ArgumentParser("Download files for YFCC100M")
-    parser.add_argument('-s', '--subset', type=str, default='both', choices=('images', 'videos'), help="")
-    args = parser.parse_args()
+    # TODO: choose for which subset ('images', 'videos', or 'both') to download dataset files
+    # parser = argparse.ArgumentParser("Download files for YFCC100M")
+    # parser.add_argument('-s', '--subset', type=str, default='both', choices=('images', 'videos'), help="")
+    # args = parser.parse_args()
 
     print("#.Count index files in data/...")
     index_files = []
