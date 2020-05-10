@@ -1,3 +1,4 @@
+import sys
 import os
 import urllib.request
 from xml.dom.minidom import parse
@@ -38,12 +39,23 @@ if __name__ == '__main__':
 
     print("#.Extract paths for files to be downloaded...")
     paths = []
+    erroneous_index_files = 0
     for i in tqdm(range(len(index_files))):
-        for content in parse(open(index_files[i])).getElementsByTagName("Contents"):
-            image_path = content.getElementsByTagName("Key")[0].firstChild.data
-            paths.append(image_path)
+        try:
+            for content in parse(open(index_files[i])).getElementsByTagName("Contents"):
+                image_path = content.getElementsByTagName("Key")[0].firstChild.data
+                paths.append(image_path)
+        except:
+            print("Error...")
+            erroneous_index_files += 1
     print("  \\__Found file paths: {}".format(len(paths)))
+    print("  \\__Erroneous index files (e.g., empty): {}".format(erroneous_index_files))
+    print("     You may want to download again index files (i.e., run download_index.py again)")
+    print("     This will attempt to recover any missing/erroneous index files.")
+    print("     Any files included in erroneous index files will not be downloaded!")
 
+    # TODO: ask user for permission to continue or exit program
+    
     print("#.Download files...")
     # Download files using multi-threading
     # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
