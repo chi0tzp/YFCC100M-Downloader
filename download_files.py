@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
         # Ask user for permission to continue downloading files or exit program
         while True:
-            answer = input("Press enter to continue donwloading files or 'q' to quit: ")
+            answer = input("Press enter to continue downloading files or 'q' to quit: ")
             if answer == "q":
                 sys.exit()
             else:
