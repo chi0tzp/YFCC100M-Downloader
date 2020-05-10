@@ -46,16 +46,23 @@ if __name__ == '__main__':
                 image_path = content.getElementsByTagName("Key")[0].firstChild.data
                 paths.append(image_path)
         except:
-            print("Error...")
             erroneous_index_files += 1
     print("  \\__Found file paths: {}".format(len(paths)))
     print("  \\__Erroneous index files (e.g., empty): {}".format(erroneous_index_files))
-    print("     You may want to download again index files (i.e., run download_index.py again)")
-    print("     This will attempt to recover any missing/erroneous index files.")
-    print("     Any files included in erroneous index files will not be downloaded!")
 
-    # TODO: ask user for permission to continue or exit program
-    
+    if erroneous_index_files > 0:
+        print("     You may want to download again index files (i.e., run download_index.py again)")
+        print("     This will attempt to recover any missing/erroneous index files.")
+        print("     Any files included in erroneous index files will not be downloaded!")
+
+        # Ask user for permission to continue downloading files or exit program
+        while True:
+            answer = input("Press enter to continue donwloading files or 'q' to quit: ")
+            if answer == "q":
+                sys.exit()
+            else:
+                break
+
     print("#.Download files...")
     # Download files using multi-threading
     # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
