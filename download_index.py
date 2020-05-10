@@ -17,8 +17,8 @@ def get_index(d):
     global errors
     os.makedirs(d, exist_ok=True)
     index = osp.join(d, "index.xml")
-    # TODO: check also if an existing file is non-empty
-    if not osp.isfile(index):
+    # Check if current index file does not exist or if it has zero size (if it appears to exist)
+    if (not osp.isfile(index)) or (os.stat(index).st_size == 0):
         try:
             urllib.request.urlretrieve(root_url + d, index)
         except:
