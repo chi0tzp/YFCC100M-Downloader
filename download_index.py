@@ -17,6 +17,7 @@ def get_index(d):
     global errors
     os.makedirs(d, exist_ok=True)
     index = osp.join(d, "index.xml")
+    # TODO: check also if an existing file is non-empty
     if not osp.isfile(index):
         try:
             urllib.request.urlretrieve(root_url + d, index)
@@ -126,34 +127,6 @@ if __name__ == '__main__':
         metadata_dir_index = osp.join(metadata_dir, 'index.xml')
         if not osp.isfile(metadata_dir_index):
             urllib.request.urlretrieve(root_url + metadata_dir, metadata_dir_index)
-        # metadata_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
-        #                         in parse(open(metadata_dir_index)).getElementsByTagName("CommonPrefixes")]
-        # print("metadata_dir_subdirs: {}".format(metadata_dir_subdirs))
-        #
-        # # Download subdirs of metadata directory using multi-threading
-        # # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
-        # # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
-        # pool = Pool()
-        # pool.map(get_index, metadata_dir_subdirs)
-        # pool.close()
-        #
-        # # Download metadata subdirs
-        # for i in tqdm(range(len(metadata_dir_subdirs))):
-        #     cur_dir = metadata_dir_subdirs[i]
-        #     # Create current directory and get subdir list
-        #     os.makedirs(cur_dir, exist_ok=True)
-        #     cur_dir_index = osp.join(cur_dir, 'index.xml')
-        #     if not osp.isfile(cur_dir_index):
-        #         urllib.request.urlretrieve(root_url + cur_dir, cur_dir_index)
-        #     cur_dir_subdirs = [common_prefix.getElementsByTagName("Prefix")[0].firstChild.data for common_prefix
-        #                        in parse(open(cur_dir_index)).getElementsByTagName("CommonPrefixes")]
-        #     # Download subdirs of current directory using multi-threading
-        #     # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
-        #     # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
-        #     pool = Pool()
-        #     pool.map(get_index, cur_dir_subdirs)
-        #     pool.close()
-        #     break
 
         # =============================================================
         # Get data/videos/mp4/
