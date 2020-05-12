@@ -3,6 +3,7 @@ import os
 import urllib.request
 from xml.dom.minidom import parse
 import argparse
+import multiprocessing
 from multiprocessing import Pool
 from tqdm import tqdm
 
@@ -10,6 +11,9 @@ from tqdm import tqdm
 root_url = "https://multimedia-commons.s3-us-west-2.amazonaws.com/"
 error_file = 'file_errors.log'
 errors = 0
+erroneous_index_files = 0
+manager = multiprocessing.Manager()
+paths = manager.list()
 
 
 def get_file(p):
@@ -23,12 +27,23 @@ def get_file(p):
                 errors += 1
 
 
+def get_paths(index_f):
+    global erroneous_index_files
+    try:
+        for content in parse(open(index_f)).getElementsByTagName("Contents"):
+            paths.append(content.getElementsByTagName("Key")[0].firstChild.data)
+    except:
+        erroneous_index_files += 1
+
+
 if __name__ == '__main__':
     # Set up a parser for command line arguments
+
+    parser = argparse.ArgumentParser("Download files for YFCC100M")
+    parser.add_argument('-w', '--workers', type=int, default=None, help="Set number of multiprocessing workers")
     # TODO: choose for which subset ('images', 'videos', or 'both') to download dataset files
-    # parser = argparse.ArgumentParser("Download files for YFCC100M")
-    # parser.add_argument('-s', '--subset', type=str, default='both', choices=('images', 'videos'), help="")
-    # args = parser.parse_args()
+    parser.add_argument('-s', '--subset', type=str, default='both', choices=('images', 'videos'), help="")
+    args = parser.parse_args()
 
     print("#.Count index files in data/...")
     index_files = []
@@ -39,15 +54,19 @@ if __name__ == '__main__':
     print("  \\__Found index files: {}".format(len(index_files)))
 
     print("#.Extract paths for files to be downloaded...")
-    paths = []
-    erroneous_index_files = 0
-    for i in tqdm(range(len(index_files))):
-        try:
-            for content in parse(open(index_files[i])).getElementsByTagName("Contents"):
-                image_path = content.getElementsByTagName("Key")[0].firstChild.data
-                paths.append(image_path)
-        except:
-            erroneous_index_files += 1
+    # paths = []
+    # erroneous_index_files = 0
+    # for i in tqdm(range(len(index_files))):
+    #     try:
+    #         for content in parse(open(index_files[i])).getElementsByTagName("Contents"):
+    #             image_path = content.getElementsByTagName("Key")[0].firstChild.data
+    #             paths.append(image_path)
+    #     except:
+    #         erroneous_index_files += 1
+    pool = Pool(args.workers)
+    for _ in tqdm(pool.map(get_paths, index_files), total=len(index_files)):
+        pass
+    pool.close()
     print("  \\__Found file paths: {}".format(len(paths)))
     print("  \\__Erroneous index files (e.g., empty): {}".format(erroneous_index_files))
 
@@ -66,10 +85,7 @@ if __name__ == '__main__':
 
     print("#.Download files...")
     # Download files using multi-threading
-    # Use the maximum number of the available threads -- for specifying the number of threads, call Pool() as
-    # pool = Pool(processes=<num_of_workers>), e.g., pool = Pool(processes=4)
-    pool = Pool()
-    # pool.map(get_file, paths)
+    pool = Pool(args.workers)
     for _ in tqdm(pool.imap_unordered(get_file, paths), total=len(paths)):
         pass
     pool.close()
