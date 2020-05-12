@@ -40,12 +40,14 @@ if __name__ == '__main__':
     # Set up a parser for command line arguments
 
     parser = argparse.ArgumentParser("Download files for YFCC100M")
-    parser.add_argument('-w', '--workers', type=int, default=None, help="Set number of multiprocessing workers")
     # TODO: choose for which subset ('images', 'videos', or 'both') to download dataset files
-    parser.add_argument('-s', '--subset', type=str, default='both', choices=('images', 'videos'), help="")
+    # parser.add_argument('-s', '--subset', type=str, default='both', choices=('images', 'videos', 'both'),
+    #                     help="Choose dataset subset to be downloaded")
+    parser.add_argument('-w', '--workers', type=int, default=None, help="Set number of multiprocessing workers")
     args = parser.parse_args()
 
-    print("#.Count index files in data/...")
+    # TODO: parallelize this, if possible
+    print("#.Collect index files in data/...")
     index_files = []
     for root, subdirs, files in os.walk("data/"):
         file_path = os.path.join(root, "index.xml")
@@ -54,6 +56,7 @@ if __name__ == '__main__':
     print("  \\__Found index files: {}".format(len(index_files)))
 
     print("#.Extract paths for files to be downloaded...")
+    # REVIEW: parallelize index files parsing
     # paths = []
     # erroneous_index_files = 0
     # for i in tqdm(range(len(index_files))):
@@ -64,7 +67,8 @@ if __name__ == '__main__':
     #     except:
     #         erroneous_index_files += 1
     pool = Pool(args.workers)
-    for _ in tqdm(pool.map(get_paths, index_files), total=len(index_files)):
+    # REVIEW: use `map` or `imap_unordered`?
+    for _ in tqdm(pool.imap_unordered(get_paths, index_files), total=len(index_files)):
         pass
     pool.close()
     print("  \\__Found file paths: {}".format(len(paths)))
