@@ -56,18 +56,7 @@ if __name__ == '__main__':
     print("  \\__Found index files: {}".format(len(index_files)))
 
     print("#.Extract paths for files to be downloaded...")
-    # REVIEW: parallelize index files parsing
-    # paths = []
-    # erroneous_index_files = 0
-    # for i in tqdm(range(len(index_files))):
-    #     try:
-    #         for content in parse(open(index_files[i])).getElementsByTagName("Contents"):
-    #             image_path = content.getElementsByTagName("Key")[0].firstChild.data
-    #             paths.append(image_path)
-    #     except:
-    #         erroneous_index_files += 1
     pool = Pool(args.workers)
-    # REVIEW: use `map` or `imap_unordered`?
     for _ in tqdm(pool.imap_unordered(get_paths, index_files), total=len(index_files)):
         pass
     pool.close()
